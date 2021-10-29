@@ -95,8 +95,13 @@ public class Fingerprint {
    * @return the number of black neighbours.
    */
   public static int blackNeighbours(boolean[] neighbours) {
-	  //TODO implement
-	  return 0;
+      int count = 0;
+	  for (boolean neighbour : neighbours) {
+          if (neighbour) {
+              count++;
+          }
+      }
+	  return count;
   }
   
   /**
@@ -163,10 +168,27 @@ public class Fingerprint {
    *         <code>(row, col)</code>.
    */
   public static boolean[][] connectedPixels(boolean[][] image, int row, int col, int distance) {
-      for (int i = 0; i < image.length; ++i) {
-
+      boolean[][] connectedPixels = new boolean[image.length][image[0].length];
+      connectedPixels[row][col] = true;
+      int unconnectedPixelsFound = 1;
+      while (unconnectedPixelsFound > 0) {
+          unconnectedPixelsFound = 0;
+          for (int i = 0; i < image.length; ++i) {
+              for (int j = 0; j < image[0].length; ++j) {
+                  if (image[i][j] &&
+                          !(i == row && j == col) &&
+                          !connectedPixels[i][j] &&
+                          blackNeighbours(getNeighbours(connectedPixels, i, j)) >= 1 &&
+                          Math.abs(i - row) <= distance &&
+                          Math.abs(j - col) <= distance
+                  ) {
+                      connectedPixels[i][j] = true;
+                      unconnectedPixelsFound++;
+                  }
+              }
+          }
       }
-	  return null;
+	  return connectedPixels;
   }
 
   /**

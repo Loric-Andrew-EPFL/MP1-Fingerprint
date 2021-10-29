@@ -66,10 +66,23 @@ public class Fingerprint {
    * @return An array containing each neighbours' value.
    */
   public static boolean[] getNeighbours(boolean[][] image, int row, int col) {
-	  assert (image != null); // special case that is not expected (the image is supposed to have been checked
-                              // earlier)
-	  //TODO implement
-	  return null;
+	  assert (image != null); // special case that is not expected (the image is supposed to have been checke earlier)
+
+      boolean[] neighbours = new boolean[8];
+      int[] rowDiff = {-1, -1, 0, 1, 1, 1, 0, -1};
+      int[] colDiff = {0, 1, 1, 1, 0, -1, -1, -1};
+      boolean[][] imageUnbound = new boolean[image.length + 2][image[0].length + 2];
+      for (int i = 0; i < image.length; ++i) {
+          for (int j = 0; j < image[0].length; ++j) {
+              imageUnbound[i + 1][j + 1] = image[i][j];
+          }
+      }
+
+      for (int i = 0; i < 8; ++i) {
+          neighbours[i] = imageUnbound[row + rowDiff[i] + 1][col + colDiff[i] + 1];
+      }
+
+	  return neighbours;
   }
 
   /**
@@ -150,7 +163,9 @@ public class Fingerprint {
    *         <code>(row, col)</code>.
    */
   public static boolean[][] connectedPixels(boolean[][] image, int row, int col, int distance) {
-	  //TODO implement
+      for (int i = 0; i < image.length; ++i) {
+
+      }
 	  return null;
   }
 

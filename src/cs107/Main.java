@@ -247,7 +247,7 @@ public class Main {
         boolean[][] image1 = Helper.readBinary("resources/test_inputs/1_1_small.png");
         boolean[][] skeleton1 = Fingerprint.thin(image1);
         Helper.writeBinary("skeleton_1_1_small.png", skeleton1);
-        if (Fingerprint.identical(skeleton1,Helper.readBinary("resources/test_outputs/skeleton_1_1_small.png"))) {
+        if (Fingerprint.identical(skeleton1,  Helper.readBinary("resources/test_outputs/skeleton_1_1_small.png"))) {
             System.out.println("OK");
         } else {
             System.out.println("ERROR");

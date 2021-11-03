@@ -39,11 +39,17 @@ public class Fingerprint {
 
     /**
      * Creates a copy of a boolean 2D array
-     * @param array the array to be copied
+     * @param image the array to be copied
      * @return an array with the same values and size as the argument but with different reference
      */
-    public static boolean[][] createArrayCopy(boolean[][] array) {
-        return Arrays.copyOf(array, array.length);
+    public static boolean[][] createArrayCopy(boolean[][] image) {
+        boolean[][] imageCopy = new boolean[image.length][image[0].length];
+        for (int i = 0; i < image.length; i++) {
+            for (int j = 0; j < image[0].length; j++) {
+                imageCopy[i][j] = image[i][j];
+            }
+        }
+        return imageCopy;
     }
 
     /**
@@ -163,31 +169,19 @@ public class Fingerprint {
      * @return A new array containing each pixel's value after the step.
      */
     public static boolean[][] thinningStep(boolean[][] image, int step) {
-        boolean[][] imageCopy = new boolean[image.length][image[0].length];
-        for (int i = 0; i < image.length; i++) {
-            for (int j = 0; j < image[0].length; j++) {
-                imageCopy[i][j] = image[i][j];
-            }
-        }
+        boolean[][] imageCopy = createArrayCopy(image);
         boolean[][] imageUnbound = createUnboundImage(imageCopy);
-        int[] positionIJ = {1, 0, 0, 1};
-        if (step == 1) {
-            positionIJ[0] = 0;
-            positionIJ[1] = -1;
-            positionIJ[2] = -1;
-            positionIJ[3] = 0;
-        }
-
+        int[] positionIJ = step == 0 ? new int[]{1, 0, 0, 1} : new int[]{0, -1, -1, 0};
         for (int i = 1; i < imageUnbound.length - 1; i++) {
             for (int j = 1; j < imageUnbound[0].length - 1; j++) {
                 boolean[] neighbours = getNeighbours(imageUnbound, i, j);
                 if (
                         imageUnbound[i][j] &&
-                                neighbours.length >= 1 &&
-                                blackNeighbours(neighbours) >= 2 &&
-                                blackNeighbours(neighbours) <= 6 &&
-                                transitions(neighbours) == 1 &&
-                                (!imageUnbound[i - 1][j] /*P0*/ ||
+                        neighbours.length >= 1 &&
+                        blackNeighbours(neighbours) >= 2 &&
+                        blackNeighbours(neighbours) <= 6 &&
+                        transitions(neighbours) == 1 &&
+                        (!imageUnbound[i - 1][j] /*P0*/ ||
                                         !imageUnbound[i][j + 1] /*P2*/ ||
                                         !imageUnbound[i + positionIJ[0]][j + positionIJ[1]] /*P4 or P6*/) &&
                                 (!imageUnbound[i + positionIJ[2]][j + positionIJ[3]] /*P2 or P0*/ ||

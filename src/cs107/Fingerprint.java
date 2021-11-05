@@ -39,6 +39,7 @@ public class Fingerprint {
 
     /**
      * Creates a copy of a boolean 2D array
+     *
      * @param image the array to be copied
      * @return an array with the same values and size as the argument but with different reference
      */
@@ -102,9 +103,15 @@ public class Fingerprint {
         boolean[] neighbours = new boolean[8];
         int[] rowDiff = {-1, -1, 0, 1, 1, 1, 0, -1};
         int[] colDiff = {0, 1, 1, 1, 0, -1, -1, -1};
-        boolean[][] imageUnbound = createUnboundImage(image);
         for (int i = 0; i < 8; ++i) {
-            neighbours[i] = imageUnbound[row + rowDiff[i] + 1][col + colDiff[i] + 1];
+            if (
+                    row + rowDiff[i] >= 0 &&
+                            row + rowDiff[i] < image.length &&
+                            col + colDiff[i] >= 0 &&
+                            col + colDiff[i] < image[0].length
+            ) {
+                neighbours[i] = image[row + rowDiff[i]][col + colDiff[i]];
+            }
         }
         return neighbours;
     }
@@ -170,25 +177,24 @@ public class Fingerprint {
      */
     public static boolean[][] thinningStep(boolean[][] image, int step) {
         boolean[][] imageCopy = createArrayCopy(image);
-        boolean[][] imageUnbound = createUnboundImage(imageCopy);
-        int[] positionIJ = step == 0 ? new int[]{1, 0, 0, 1} : new int[]{0, -1, -1, 0};
-        for (int i = 1; i < imageUnbound.length - 1; i++) {
-            for (int j = 1; j < imageUnbound[0].length - 1; j++) {
-                boolean[] neighbours = getNeighbours(imageUnbound, i, j);
+        int[] positionIJ = step == 0 ? new int[]{4, 2} : new int[]{6, 0};
+        for (int i = 0; i < image.length; i++) {
+            for (int j = 0; j < image[0].length; j++) {
+                boolean[] neighbours = getNeighbours(image, i, j);
                 if (
-                        imageUnbound[i][j] &&
-                        neighbours.length >= 1 &&
-                        blackNeighbours(neighbours) >= 2 &&
-                        blackNeighbours(neighbours) <= 6 &&
-                        transitions(neighbours) == 1 &&
-                        (!imageUnbound[i - 1][j] /*P0*/ ||
-                                        !imageUnbound[i][j + 1] /*P2*/ ||
-                                        !imageUnbound[i + positionIJ[0]][j + positionIJ[1]] /*P4 or P6*/) &&
-                                (!imageUnbound[i + positionIJ[2]][j + positionIJ[3]] /*P2 or P0*/ ||
-                                        !imageUnbound[i + 1][j] /*P4*/ ||
-                                        !imageUnbound[i][j - 1] /*P6*/)
+                        image[i][j] &&
+                                neighbours.length >= 1 &&
+                                blackNeighbours(neighbours) >= 2 &&
+                                blackNeighbours(neighbours) <= 6 &&
+                                transitions(neighbours) == 1 &&
+                                (!neighbours[0] /*P0*/ ||
+                                        !neighbours[2] /*P2*/ ||
+                                        !neighbours[positionIJ[0]] /*P4 or P6*/) &&
+                                (!neighbours[positionIJ[1]] /*P2 or P0*/ ||
+                                        !neighbours[4] /*P4*/ ||
+                                        !neighbours[6] /*P6*/)
                 ) {
-                    imageCopy[i - 1][j - 1] = false;
+                    imageCopy[i][j] = false;
                 }
             }
         }
@@ -253,6 +259,10 @@ public class Fingerprint {
                             currentCol += colDiff[i];
                             previousConnected.add(new int[]{currentRow, currentCol});
                             break;
+                        } else if (i == currentNeighbours.length - 1) {
+                            previousConnected.remove(previousConnected.size() - 1);
+                            currentRow = previousConnected.get((previousConnected.size() - 1))[0];
+                            currentCol = previousConnected.get((previousConnected.size() - 1))[1];
                         }
                     } else if (i == currentNeighbours.length - 1) {
                         previousConnected.remove(previousConnected.size() - 1);
@@ -390,8 +400,20 @@ public class Fingerprint {
      * @see #thin(boolean[][])
      */
     public static List<int[]> extract(boolean[][] image) {
-        //TODO implement
-        return null;
+        List<int[]> minutias = new ArrayList<>();
+        for (int i = 1; i < image.length - 1; ++i) {
+            for (int j = 1; j < image[0].length - 1; ++j) {
+                if (image[i][j]) {
+                    int transitions = transitions(getNeighbours(image, i, j));
+                    if (transitions == 1 || transitions == 3) {
+                        int orientation = computeOrientation(image, i, j, ORIENTATION_DISTANCE);
+                        System.out.println(orientation);
+                        minutias.add(new int[]{i, j, orientation});
+                    }
+                }
+            }
+        }
+        return minutias;
     }
 
     /**
@@ -404,7 +426,9 @@ public class Fingerprint {
      * @return the minutia rotated around the given center.
      */
     public static int[] applyRotation(int[] minutia, int centerRow, int centerCol, int rotation) {
-        //TODO implement
+        int[] rotatedMinutia = new int[3];
+        int x = minutia[1] - centerCol;
+        int y = centerRow - minutia[0];
         return null;
     }
 

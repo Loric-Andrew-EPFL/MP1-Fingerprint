@@ -26,16 +26,16 @@ public class Main {
         //testOrientation();
         //testApplyRotation();
         //testApplyTranslation();
-        testThin();
+        //testThin();
         //testWithSkeleton();
 
         //testDrawSkeleton("1_1"); //draw skeleton of fingerprint 1_1.png
         //testDrawSkeleton("1_2"); //draw skeleton of fingerprint 1_2.png
         //testDrawSkeleton("2_1"); //draw skeleton of fingerprint 2_1.png
 
-        //testDrawMinutiae("1_1"); //draw minutiae of fingerprint 1_1.png
-        //testDrawMinutiae("1_2"); //draw minutiae of fingerprint 1_2.png
-        //testDrawMinutiae("2_1"); //draw minutiae of fingerprint 2_1.png
+        testDrawMinutiae("1_1"); //draw minutiae of fingerprint 1_1.png
+        testDrawMinutiae("1_2"); //draw minutiae of fingerprint 1_2.png
+        testDrawMinutiae("2_1"); //draw minutiae of fingerprint 2_1.png
 
         //---------------------------
         // Test overall functionality
@@ -258,6 +258,11 @@ public class Main {
         boolean[][] image1 = Helper.readBinary("resources/fingerprints/" + name + ".png");
         boolean[][] skeleton1 = Fingerprint.thin(image1);
         Helper.writeBinary("skeleton_" + name + ".png", skeleton1);
+        if (Fingerprint.identical(skeleton1, Helper.readBinary("resources/test_outputs/skeleton_" + name + ".png"))) {
+            System.out.println("OK");
+        } else {
+            System.out.println("Not OK");
+        }
     }
 
     public static void testDrawMinutiae(String name) {
@@ -349,7 +354,7 @@ public class Main {
         }
     }
 
-    /*
+    /**
      * Helper functions to print and compare arrays
      */
     public static boolean arrayEqual(boolean[] array1, boolean[] array2) {

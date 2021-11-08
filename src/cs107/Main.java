@@ -33,9 +33,9 @@ public class Main {
         //testDrawSkeleton("1_2"); //draw skeleton of fingerprint 1_2.png
         //testDrawSkeleton("2_1"); //draw skeleton of fingerprint 2_1.png
 
-        testDrawMinutiae("1_1"); //draw minutiae of fingerprint 1_1.png
-        testDrawMinutiae("1_2"); //draw minutiae of fingerprint 1_2.png
-        testDrawMinutiae("2_1"); //draw minutiae of fingerprint 2_1.png
+        //testDrawMinutiae("1_1"); //draw minutiae of fingerprint 1_1.png
+        //testDrawMinutiae("1_2"); //draw minutiae of fingerprint 1_2.png
+        //testDrawMinutiae("2_1"); //draw minutiae of fingerprint 2_1.png
 
         //---------------------------
         // Test overall functionality
@@ -53,9 +53,9 @@ public class Main {
         //testCompareAllFingerprints("1_1", 2, false);
 
         //compare 1_1 with all images of finger 3 to 16
-        //for (int f = 3; f <= 16; f++) {
-        //    testCompareAllFingerprints("1_1", f, false);
-        //}
+        /*for (int f = 3; f <= 16; f++) {
+            testCompareAllFingerprints("1_1", f, false);
+        }*/
     }
 
     /**
@@ -337,6 +337,8 @@ public class Main {
         //Helper.writeARGB("./minutiae_" + name2 + ".png", colorImageSkeleton2);
 
         boolean isMatch = Fingerprint.match(minutiae1, minutiae2);
+        String result = isMatch == expectedResult ? "OK   " : "ERROR";
+        System.out.print(result + ": ");
         System.out.print("Compare " + name1 + " with " + name2);
         System.out.print(". Expected match: " + expectedResult);
         System.out.println(" Computed match: " + isMatch);

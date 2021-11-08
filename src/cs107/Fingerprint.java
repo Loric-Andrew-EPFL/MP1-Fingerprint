@@ -54,22 +54,6 @@ public class Fingerprint {
     }
 
     /**
-     * Duplicates an array with false all around to simplify further calculations
-     *
-     * @param image the image to duplicate to create error-free bounds
-     * @return the image with size equals to: number of rows + 2 and number of columns + 2
-     */
-    public static boolean[][] createUnboundImage(boolean[][] image) {
-        boolean[][] imageUnbound = new boolean[image.length + 2][image[0].length + 2];
-        for (int i = 0; i < image.length; ++i) {
-            for (int j = 0; j < image[0].length; ++j) {
-                imageUnbound[i + 1][j + 1] = image[i][j];
-            }
-        }
-        return imageUnbound;
-    }
-
-    /**
      * Returns an array containing the value of the 8 neighbours of the pixel at
      * coordinates <code>(row, col)</code>.
      * <p>
@@ -234,7 +218,7 @@ public class Fingerprint {
      */
     public static boolean[][] connectedPixels(boolean[][] image, int row, int col, int distance) {
         boolean[][] connectedPixels = new boolean[image.length][image[0].length];
-        ArrayList<int[]> previousConnected = new ArrayList<int[]>();
+        ArrayList<int[]> previousConnected = new ArrayList<>();
 
         int[] rowDiff = {-1, -1, 0, 1, 1, 1, 0, -1};
         int[] colDiff = {0, 1, 1, 1, 0, -1, -1, -1};
@@ -400,20 +384,19 @@ public class Fingerprint {
      * @see #thin(boolean[][])
      */
     public static List<int[]> extract(boolean[][] image) {
-        List<int[]> minutias = new ArrayList<>();
+        List<int[]> minutiae = new ArrayList<>();
         for (int i = 1; i < image.length - 1; ++i) {
             for (int j = 1; j < image[0].length - 1; ++j) {
                 if (image[i][j]) {
                     int transitions = transitions(getNeighbours(image, i, j));
                     if (transitions == 1 || transitions == 3) {
                         int orientation = computeOrientation(image, i, j, ORIENTATION_DISTANCE);
-                        System.out.println(orientation);
-                        minutias.add(new int[]{i, j, orientation});
+                        minutiae.add(new int[]{i, j, orientation});
                     }
                 }
             }
         }
-        return minutias;
+        return minutiae;
     }
 
     /**
@@ -429,7 +412,14 @@ public class Fingerprint {
         int[] rotatedMinutia = new int[3];
         int x = minutia[1] - centerCol;
         int y = centerRow - minutia[0];
-        return null;
+        double cos = Math.cos((rotation * Math.PI) / 180);
+        double sin = Math.sin((rotation * Math.PI) / 180);
+        int newX = (int) Math.round(x * cos - y * sin);
+        int newY = (int) Math.round(x * sin + y * cos);
+        rotatedMinutia[0] = centerRow - newY;
+        rotatedMinutia[1] = newX + centerCol;
+        rotatedMinutia[2] = (minutia[2] + rotation) % 360;
+        return rotatedMinutia;
     }
 
     /**
@@ -441,8 +431,11 @@ public class Fingerprint {
      * @return the translated minutia.
      */
     public static int[] applyTranslation(int[] minutia, int rowTranslation, int colTranslation) {
-        //TODO implement
-        return null;
+        int[] translatedMinutia = new int[3];
+        translatedMinutia[0] = minutia[0] - rowTranslation;
+        translatedMinutia[1] = minutia[1] - colTranslation;
+        translatedMinutia[2] = minutia[2];
+        return translatedMinutia;
     }
 
     /**
@@ -459,8 +452,10 @@ public class Fingerprint {
      */
     public static int[] applyTransformation(int[] minutia, int centerRow, int centerCol, int rowTranslation,
                                             int colTranslation, int rotation) {
-        //TODO implement
-        return null;
+        int[] transformedMinutia = applyRotation(minutia, centerRow, centerCol, rotation);
+        transformedMinutia = applyTranslation(transformedMinutia, rowTranslation, colTranslation);
+
+        return transformedMinutia;
     }
 
     /**
@@ -477,8 +472,12 @@ public class Fingerprint {
      */
     public static List<int[]> applyTransformation(List<int[]> minutiae, int centerRow, int centerCol, int rowTranslation,
                                                   int colTranslation, int rotation) {
-        //TODO implement
-        return null;
+        List<int[]> transformedMinutiae = new ArrayList<>();
+        for (int[] minutia : minutiae) {
+            transformedMinutiae.add(applyTransformation(minutia, centerRow, centerCol, rowTranslation, colTranslation,
+                    rotation));
+        }
+        return transformedMinutiae;
     }
 
     /**
@@ -494,8 +493,18 @@ public class Fingerprint {
      */
     public static int matchingMinutiaeCount(List<int[]> minutiae1, List<int[]> minutiae2, int maxDistance,
                                             int maxOrientation) {
-        //TODO implement
-        return 0;
+        int count = 0;
+        for (int[] minutia1 : minutiae1) {
+            for (int[] minutia2 : minutiae2) {
+                double euclideanDistance = Math.sqrt(Math.pow(minutia1[0] - minutia2[0], 2) + Math.pow(minutia1[1] - minutia2[1], 2));
+                int angleDifference = Math.abs(minutia1[2] - minutia2[2]);
+                if (euclideanDistance <= maxDistance && angleDifference <= maxOrientation) {
+                    count++;
+                    //System.out.println(count + ": [" + minutia1[0] + ", " + minutia1[1] + ", " + minutia1[2] + "], " +"[" + minutia2[0] + ", " + minutia2[1] + ", " + minutia2[2] + "]");
+                }
+            }
+        }
+        return count;
     }
 
     /**
@@ -507,7 +516,22 @@ public class Fingerprint {
      * otherwise.
      */
     public static boolean match(List<int[]> minutiae1, List<int[]> minutiae2) {
-        //TODO implement
+        int maxFound = 0;
+        for (int[] minutia1 : minutiae1) {
+            for (int[] minutia2 : minutiae2) {
+                int rotation = minutia1[2] - minutia2[2];
+                for (int i = rotation - MATCH_ANGLE_OFFSET; i <= rotation + MATCH_ANGLE_OFFSET; ++i) {
+                    List<int[]> transformedMinutia2 = applyTransformation(minutiae2, minutia2[0], minutia2[1], minutia2[0] - minutia1[0], minutia2[1] - minutia1[1], i);
+                    int foundMinutia = matchingMinutiaeCount(minutiae1, transformedMinutia2, DISTANCE_THRESHOLD, ORIENTATION_THRESHOLD);
+                    maxFound = Math.max(foundMinutia, maxFound);
+                    if (foundMinutia >= FOUND_THRESHOLD) {
+                        System.out.print("Match count: " + maxFound + ". ");
+                        return true;
+                    }
+                }
+            }
+        }
+        System.out.print("Match count: " + maxFound + ". ");
         return false;
     }
 }

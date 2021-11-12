@@ -416,9 +416,18 @@ public class Fingerprint {
         double sin = Math.sin((rotation * Math.PI) / 180);
         int newX = (int) Math.round(x * cos - y * sin);
         int newY = (int) Math.round(x * sin + y * cos);
+
+        int newOrientation = (minutia[2] + rotation) % 360;
+        while (newOrientation < 0) {
+            newOrientation += 360;
+        }
+        while (newOrientation > 359) {
+            newOrientation -= 360;
+        }
+
         rotatedMinutia[0] = centerRow - newY;
         rotatedMinutia[1] = newX + centerCol;
-        rotatedMinutia[2] = (minutia[2] + rotation) % 360;
+        rotatedMinutia[2] = newOrientation;
         return rotatedMinutia;
     }
 
@@ -500,7 +509,7 @@ public class Fingerprint {
                 int angleDifference = Math.abs(minutia1[2] - minutia2[2]);
                 if (euclideanDistance <= maxDistance && angleDifference <= maxOrientation) {
                     count++;
-                    //System.out.println(count + ": [" + minutia1[0] + ", " + minutia1[1] + ", " + minutia1[2] + "], " +"[" + minutia2[0] + ", " + minutia2[1] + ", " + minutia2[2] + "]");
+                    break;
                 }
             }
         }

@@ -2,6 +2,7 @@ package cs107;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * This class will not be graded. You can use it to test your program.
@@ -47,15 +48,18 @@ public class Main {
         //testCompareFingerprints("1_1", "2_1", false); //expected match: false
 
         //compare 1_1 with all other images of the same finger
-        //testCompareAllFingerprints("1_1", 1, true);
+        //testCompareAllFingerprints("1_2", 1, true);
 
         //compare 1_1 with all images of finger 2
-        //testCompareAllFingerprints("1_1", 2, false);
+        //testCompareAllFingerprints("1_2", 2, false);
 
         //compare 1_1 with all images of finger 3 to 16
         /*for (int f = 3; f <= 16; f++) {
-            testCompareAllFingerprints("1_1", f, false);
+            testCompareAllFingerprints("1_2", f, false);
         }*/
+
+        //testAllPossibleFingerprints();
+        IntStream.range(1, 17).parallel().forEach(i -> testAllPossibleFingerprints(i));
     }
 
     /**
@@ -81,7 +85,7 @@ public class Main {
         System.out.print("testGetNeighbours 2: ");
         boolean[][] image2 = {{true, true}};
         boolean[] neighbours2 = Fingerprint.getNeighbours(image2, 0, 0);
-        boolean[] expected2 = {false, false, true,  false,
+        boolean[] expected2 = {false, false, true, false,
                 false, false, false, false};
         if (arrayEqual(neighbours2, expected2)) {
             System.out.println("OK");
@@ -131,8 +135,8 @@ public class Main {
                 {false, true, true, false},
                 {false, false, false, false}};
         boolean[][] expected = {{false, false, false, false},
-                {false, false, true,  false},
-                {false, true,  true,  false},
+                {false, false, true, false},
+                {false, true, true, false},
                 {false, false, false, false}};
         boolean[][] connectedPixels = Fingerprint.connectedPixels(image, 2, 1, 1);
         if (arrayEqual(connectedPixels, expected)) {
@@ -152,14 +156,14 @@ public class Main {
      */
     public static void testConnectedPixels3() {
         System.out.print("testConnectedPixels3: ");
-        boolean[][] image = {{true,  false, false, true,  true},
-                {true,  false, true,  true,  false},
-                {true,  true,  false, false, false},
-                {false, true,  false, true,  false}};
-        boolean[][] expected = {{true,  false, false, true,  false},
-                {true,  false, true,  true,  false},
-                {true,  true,  false, false, false},
-                {false, true,  false, false, false}};
+        boolean[][] image = {{true, false, false, true, true},
+                {true, false, true, true, false},
+                {true, true, false, false, false},
+                {false, true, false, true, false}};
+        boolean[][] expected = {{true, false, false, true, false},
+                {true, false, true, true, false},
+                {true, true, false, false, false},
+                {false, true, false, false, false}};
         boolean[][] connectedPixels = Fingerprint.connectedPixels(image, 2, 1, 2);
         if (arrayEqual(connectedPixels, expected)) {
             System.out.println("OK");
@@ -191,7 +195,7 @@ public class Main {
      */
     public static void testApplyRotation() {
         // minutia, centerRow, centerCol, rotation)
-        int[] minutia = new int[] {1, 3, 10};
+        int[] minutia = new int[]{1, 3, 10};
         int[] result = Fingerprint.applyRotation(minutia, 0, 0, 0);
         System.out.println("Expected: 1,3,10");
         System.out.print("Computed: ");
@@ -207,12 +211,12 @@ public class Main {
         System.out.print("Computed: ");
         printArray(result);
 
-        result = Fingerprint.applyRotation(new int[] {0, 3, 10}, 0, 0, 90);
+        result = Fingerprint.applyRotation(new int[]{0, 3, 10}, 0, 0, 90);
         System.out.println("Expected: -3,0,100");
         System.out.print("Computed: ");
         printArray(result);
 
-        result = Fingerprint.applyRotation(new int[] {3, 0, 10}, 0, 0, 90);
+        result = Fingerprint.applyRotation(new int[]{3, 0, 10}, 0, 0, 90);
         System.out.println("Expected: 0,3,100");
         System.out.print("Computed: ");
         printArray(result);
@@ -224,12 +228,12 @@ public class Main {
      */
     public static void testApplyTranslation() {
         // minutia, rowTranslation, colTranslation)
-        int[] result = Fingerprint.applyTranslation(new int[] {1, 3, 10}, 0, 0);
+        int[] result = Fingerprint.applyTranslation(new int[]{1, 3, 10}, 0, 0);
         System.out.println("Expected: 1,3,10");
         System.out.print("Computed: ");
         printArray(result);
 
-        result = Fingerprint.applyTranslation(new int[] {1, 3, 10}, 10, 5);
+        result = Fingerprint.applyTranslation(new int[]{1, 3, 10}, 10, 5);
         System.out.println("Expected: -9,-2,10");
         System.out.print("Computed: ");
         printArray(result);
@@ -247,7 +251,7 @@ public class Main {
         boolean[][] image1 = Helper.readBinary("resources/test_inputs/1_1_small.png");
         boolean[][] skeleton1 = Fingerprint.thin(image1);
         Helper.writeBinary("skeleton_1_1_small.png", skeleton1);
-        if (Fingerprint.identical(skeleton1,  Helper.readBinary("resources/test_outputs/skeleton_1_1_small.png"))) {
+        if (Fingerprint.identical(skeleton1, Helper.readBinary("resources/test_outputs/skeleton_1_1_small.png"))) {
             System.out.println("OK");
         } else {
             System.out.println("ERROR");
@@ -285,8 +289,8 @@ public class Main {
         boolean[][] skeleton1 = Helper.readBinary("resources/test_inputs/skeletonTest.png");
         List<int[]> minutiae1 = Fingerprint.extract(skeleton1);
         List<int[]> expected = new ArrayList<int[]>();
-        expected.add(new int[] {39, 21, 264});
-        expected.add(new int[] {53, 33, 270});
+        expected.add(new int[]{39, 21, 264});
+        expected.add(new int[]{53, 33, 270});
 
         System.out.print("Expected minutiae: ");
         printMinutiae(expected);
@@ -316,7 +320,7 @@ public class Main {
      * compare the fingerprint in the file name1.png with the fingerprint in the
      * file name2.png. The third parameter indicates if we expected a match or not.
      */
-    public static void testCompareFingerprints(String name1, String name2, boolean expectedResult) {
+    public static boolean testCompareFingerprints(String name1, String name2, boolean expectedResult) {
         boolean[][] image1 = Helper.readBinary("resources/fingerprints/" + name1 + ".png");
         // Helper.show(Helper.fromBinary(image1), "Image1");
         boolean[][] skeleton1 = Fingerprint.thin(image1);
@@ -342,6 +346,7 @@ public class Main {
         System.out.print("Compare " + name1 + " with " + name2);
         System.out.print(". Expected match: " + expectedResult);
         System.out.println(" Computed match: " + isMatch);
+        return isMatch == expectedResult;
     }
 
     /**
@@ -350,9 +355,31 @@ public class Main {
      * fingerprints of the given finger (second parameter).
      * The third parameter indicates if we expected a match or not.
      */
-    public static void testCompareAllFingerprints(String name1, int finger, boolean expectedResult) {
+    public static int testCompareAllFingerprints(String name1, int finger, boolean expectedResult) {
+        int errorCount = 0;
         for (int i = 1; i <= 8; i++) {
-            testCompareFingerprints(name1, finger + "_" + i, expectedResult);
+            boolean result = testCompareFingerprints(name1, finger + "_" + i, expectedResult);
+            if (!result) errorCount++;
+        }
+        return errorCount;
+    }
+
+    public static void testAllPossibleFingerprints(int finger) {
+        int total = 0;
+        int errorCount = 0;
+        for (int j = 1; j <= 8; ++j) {
+            for (int k = 1; k <= 16; ++k) {
+                boolean expectedResult = finger == k;
+                errorCount += testCompareAllFingerprints(finger + "_" + j, k, expectedResult);
+                total += 8;
+            }
+        }
+        System.out.println("Analyzed a total of " + total + " objects, the efficiency of the algorithm is : " + errorCount + " / " + total + " or also a percentage of " + (errorCount * 100 / total) + "%");
+    }
+
+    public static void testSameFingers(int finger) {
+        for (int j = 1; j <= 8; ++j) {
+            testCompareAllFingerprints(finger + "_" + j, finger, true);
         }
     }
 

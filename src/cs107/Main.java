@@ -21,10 +21,12 @@ public class Main {
         //System.out.println("Uncomment the function calls in Main.main to test your implementation.");
         //System.out.println("The provided tests are not complete. You have to write your own tests.");
         //testGetNeighbours();
+        //testTransitions();
         //testConnectedPixels1();
         //testConnectedPixels2();
         //testConnectedPixels3();
         //testOrientation();
+        //testOrientation2();
         //testApplyRotation();
         //testApplyTranslation();
         //testThin();
@@ -48,18 +50,17 @@ public class Main {
         //testCompareFingerprints("1_1", "2_1", false); //expected match: false
 
         //compare 1_1 with all other images of the same finger
-        //testCompareAllFingerprints("1_2", 1, true);
+        //testCompareAllFingerprints("1_1", 1, true);
 
         //compare 1_1 with all images of finger 2
-        //testCompareAllFingerprints("1_2", 2, false);
+        //testCompareAllFingerprints("1_1", 2, false);
 
         //compare 1_1 with all images of finger 3 to 16
         /*for (int f = 3; f <= 16; f++) {
-            testCompareAllFingerprints("1_2", f, false);
+            testCompareAllFingerprints("1_1", f, false);
         }*/
 
         //testAllPossibleFingerprints();
-        IntStream.range(1, 17).parallel().forEach(i -> testAllPossibleFingerprints(i));
     }
 
     /**
@@ -95,6 +96,30 @@ public class Main {
             printArray(expected2);
             System.out.print("Computed: ");
             printArray(neighbours2);
+        }
+    }
+
+    /**
+     * This function is here to test the functionalities of transition.
+     */
+    public static void testTransitions() {
+        System.out.print("testTransitions: ");
+        boolean[][] image = {
+                {false, true, false},
+                {true, false, true},
+                {false, true, false},
+        };
+        boolean[] neighbours = Fingerprint.getNeighbours(image, 1, 1);
+        int transitions = Fingerprint.transitions(neighbours);
+        int expected = 4;
+        if (transitions == expected) {
+            System.out.println("OK");
+        } else {
+            System.out.println("ERROR");
+            System.out.print("Expected: ");
+            System.out.print(expected);
+            System.out.print("Computed: ");
+            System.out.print(transitions);
         }
     }
 
@@ -187,6 +212,19 @@ public class Main {
                 {false, false, false, false}};
         int angle = Fingerprint.computeOrientation(image, 2, 1, 3);
         System.out.println("Expected angle: 35\t Computed angle: " + angle);
+    }
+
+    /**
+     * This function is here to test the functionalities of
+     * computeOrientation in the case of a vertical angle/slope.
+     */
+    public static void testOrientation2() {
+        boolean[][] image = {{false, true, false, false},
+                {false, true, false, false},
+                {false, true, false, false},
+                {false, true, false, false}};
+        int angle = Fingerprint.computeOrientation(image, 0, 1, 4);
+        System.out.println("Expected angle: 270\t Computed angle: " + angle);
     }
 
     /**
@@ -319,6 +357,11 @@ public class Main {
      * This function is here to help you test the overall functionalities. It will
      * compare the fingerprint in the file name1.png with the fingerprint in the
      * file name2.png. The third parameter indicates if we expected a match or not.
+     *
+     * @param name1 The String object containing the name of the base file for comparing
+     * @param name2 The String object containing the name of the second file for comparing
+     * @param expectedResult true if the algorithm should match the two fingers, false otherwise
+     * @return True if the computed match is the same as the expected result, false otherwise
      */
     public static boolean testCompareFingerprints(String name1, String name2, boolean expectedResult) {
         boolean[][] image1 = Helper.readBinary("resources/fingerprints/" + name1 + ".png");
@@ -354,6 +397,11 @@ public class Main {
      * compare the fingerprint in the file <code>name1.png</code> with all the eight
      * fingerprints of the given finger (second parameter).
      * The third parameter indicates if we expected a match or not.
+     *
+     * @param name1 The String object containing the name of the base file for comparing
+     * @param finger The finger number from 1 to 16
+     * @param expectedResult true if the algorithm should match all fingers, false otherwise
+     * @return The numbers of errors found by computing the eight matchings
      */
     public static int testCompareAllFingerprints(String name1, int finger, boolean expectedResult) {
         int errorCount = 0;
@@ -364,22 +412,35 @@ public class Main {
         return errorCount;
     }
 
-    public static void testAllPossibleFingerprints(int finger) {
+    /**
+     * This function is here to test all the possible matchings with the 128 images from the base resources.
+     * It tests every images with every image also.
+     * It then prints the number of errors found in the whole execution process.
+     */
+    public static void testAllPossibleFingerprintsMatchings() {
         int total = 0;
         int errorCount = 0;
-        for (int j = 1; j <= 8; ++j) {
-            for (int k = 1; k <= 16; ++k) {
-                boolean expectedResult = finger == k;
-                errorCount += testCompareAllFingerprints(finger + "_" + j, k, expectedResult);
-                total += 8;
+        for (int i = 1; i <= 16; ++i) {
+            for (int j = 1; j <= 8; ++j) {
+                for (int k = 1; k <= 16; ++k) {
+                    boolean expectedResult = i == k;
+                    errorCount += testCompareAllFingerprints(i + "_" + j, k, expectedResult);
+                    total += 8;
+                }
             }
         }
-        System.out.println("Analyzed a total of " + total + " objects, the efficiency of the algorithm is : " + errorCount + " / " + total + " or also a percentage of " + (errorCount * 100 / total) + "%");
+        System.out.println("Analyzed a total of " + total + " fingerprints matchings, the correctness of the algorithm is : " + errorCount + " / " + total + " or " + (errorCount * 100 / total) + "%");
     }
 
-    public static void testSameFingers(int finger) {
-        for (int j = 1; j <= 8; ++j) {
-            testCompareAllFingerprints(finger + "_" + j, finger, true);
+    /**
+     * This function is here to test fingerprint matchings from the same fingers.
+     * For instance image 2_3 with all images from finger 2.
+     */
+    public static void testSameFinger() {
+        for (int i = 1; i <= 16; ++i) {
+            for (int j = 1; j <= 8; ++j) {
+                testCompareAllFingerprints(i + "_" + j, i, true);
+            }
         }
     }
 

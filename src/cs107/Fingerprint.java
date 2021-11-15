@@ -243,12 +243,9 @@ public class Fingerprint {
                             currentCol += colDiff[i];
                             previousConnected.add(new int[]{currentRow, currentCol});
                             break;
-                        } else if (i == currentNeighbours.length - 1) {
-                            previousConnected.remove(previousConnected.size() - 1);
-                            currentRow = previousConnected.get((previousConnected.size() - 1))[0];
-                            currentCol = previousConnected.get((previousConnected.size() - 1))[1];
                         }
-                    } else if (i == currentNeighbours.length - 1) {
+                    }
+                    if (i == currentNeighbours.length - 1) {
                         previousConnected.remove(previousConnected.size() - 1);
                         currentRow = previousConnected.get((previousConnected.size() - 1))[0];
                         currentCol = previousConnected.get((previousConnected.size() - 1))[1];
@@ -317,7 +314,7 @@ public class Fingerprint {
 
         for (int i = 0; i < connectedPixels.length; ++i) {
             for (int j = 0; j < connectedPixels[0].length; ++j) {
-                if (connectedPixels[i][j] && (i != row && col != j)) {
+                if (connectedPixels[i][j] && !(i == row && col == j)) {
                     double xPos = j - col;
                     double yPos = row - i;
                     if (slope != Double.POSITIVE_INFINITY) {
